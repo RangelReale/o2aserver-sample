@@ -1,0 +1,9 @@
+/.idea
+/*.iml
+
+/out
+/pkg
+/src/code.google.com
+/src/github.com
+
+/src/labix.org
