@@ -1,11 +1,11 @@
 package main
 
 import (
+	"github.com/RangelReale/o2as-storage-mgo/mgostorage"
+	"github.com/RangelReale/o2as-tokengen-jwt/jwttokengen"
+	"github.com/RangelReale/o2aserver"
 	"log"
 	"net/http"
-	"github.com/RangelReale/o2aserver"
-	"github.com/RangelReale/o2as-tokengen-jwt/jwttokengen"
-	"github.com/RangelReale/o2as-storage-mgo/mgostorage"
 )
 
 func main() {
@@ -13,31 +13,32 @@ func main() {
 	if err != nil {
 		log.Panic(err)
 	}
+	tokengenauth := &o2aserver.TokenGenAuthorizationDefault{}
 	config := jwttokengen.NewTokenGenJWT(privatekey, publickey)
 	appconfig := &o2aserver.AppConfigDefault{}
 
 	http.HandleFunc("/authorize", func(w http.ResponseWriter, r *http.Request) {
-			response := o2aserver.NewResponse()
-			server := o2aserver.NewAuthorization(storage, appconfig)
-			if server.HandleAuthorizeRequest(response, r) {
-				server.FinishAuthorizeRequest(response, r, true, "1234")
-			}
-			response.Send(w)
-		})
+		response := o2aserver.NewResponse()
+		server := o2aserver.NewAuthorization(storage, tokengenauth, appconfig)
+		if server.HandleAuthorizeRequest(response, r) {
+			server.FinishAuthorizeRequest(response, r, true, "1234")
+		}
+		response.Send(w)
+	})
 
 	http.HandleFunc("/token", func(w http.ResponseWriter, r *http.Request) {
-			response := o2aserver.NewResponse()
-			server := o2aserver.NewAccessToken(storage, config, appconfig)
-			server.HandleAccessTokenRequest(response, r)
-			response.Send(w)
-		})
+		response := o2aserver.NewResponse()
+		server := o2aserver.NewAccessToken(storage, config, appconfig)
+		server.HandleAccessTokenRequest(response, r)
+		response.Send(w)
+	})
 
 	http.HandleFunc("/info", func(w http.ResponseWriter, r *http.Request) {
-			response := o2aserver.NewResponse()
-			server := o2aserver.NewInfo(storage, appconfig)
-			server.HandleInfoRequest(response, r)
-			response.Send(w)
-		})
+		response := o2aserver.NewResponse()
+		server := o2aserver.NewInfo(storage, appconfig)
+		server.HandleInfoRequest(response, r)
+		response.Send(w)
+	})
 
 	http.ListenAndServe(":13000", nil)
 }
@@ -80,5 +81,4 @@ XrHhR+1DcKJzQBSTAGnpYVaqpsARap+nwRipr3nUTuxyGohBTSmjJ2usSeQXHI3b
 ODIRe1AuTyHceAbewn8b462yEWKARdpd9AjQW5SIVPfdsz5B6GlYQ5LdYKtznTuy
 7wIDAQAB
 -----END PUBLIC KEY-----`)
-
 )
